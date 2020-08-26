@@ -4,6 +4,10 @@ import './App.css';
 import Navbar from './Navbar';
 import Search from './Search';
 import Carousel from './Carousel';
+import BarDetail from './BarDetail';
+import Footer from './Footer';
+
+
 const url = 'http://localhost:3000';
 
 // https://parabarear.com
@@ -12,46 +16,35 @@ const url = 'http://localhost:3000';
 // API: Application Programming Interface
 
 function App() {
+  const [search,setSearch] = useState('');
   const [mejoresBares,setMejoresBares] = useState([]);
   const [baresCerca,setBaresCerca] = useState([]);
   const [baresAmigos,setBaresAmigos] = useState([]);
+  const getBares = async (search) => {
+    setMejoresBares(await fetch(url + '/bares' + (search ? `?search=${search}` : '')).then(res=>res.json()))
+  }
   useEffect(()=>{
-    const getBares = async () => {
-      // const nombre = prompt("Ingrese nombre del bar");
-      // const ubicacion = prompt("Ingrese ubicación");
-      // await fetch('https://bares.t.estylar.com/bares',{
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({
-      //     nombre: nombre,
-      //     ubicacion: ubicacion
-      //   })
-      // }).then(res=>res.json())
-      setMejoresBares(await fetch(url + '/bares').then(res=>res.json()))
-      // setBaresCerca(await fetch('https://bares.t.estylar.com/bares').then(res=>res.json()))
-      // setBaresAmigos(await fetch('/baresAmigos.json').then(res=>res.json()))
-    }
-    getBares();
-  },[]);
+    getBares(search);
+  },[search]);
+
   return (
     <div>
-      <Navbar></Navbar>
       <Router>
+      <Navbar></Navbar>
         <Switch>
           <Route path="/" exact >
-            <Search></Search>
+            <div className="home-container">
+            <Search search={search} onChange={ev=>setSearch(ev.target.value)}></Search>
             <Carousel bares={mejoresBares} titulo="Los mejores bares para vos" circular={true}></Carousel>
             <Carousel bares={baresCerca} titulo="Cerca tuyo"></Carousel>
             <Carousel bares={baresAmigos} titulo="Según tus amigos"></Carousel>
+            </div>
+            
           </Route>
-          <Route path="/bar/:id"  >
-            <h3>Pediste información de un bar</h3>
-            <Link to="/">Go back</Link>
-          </Route>
+          <Route path="/bar/:id" component={props=> <BarDetail {...props} url={url}></BarDetail>} />
+            
         </Switch>
-
+        <Footer></Footer>
       </Router>
     </div>
   );
